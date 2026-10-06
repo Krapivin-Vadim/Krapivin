@@ -8,18 +8,10 @@
 """
 
 import pytest
-from fastapi.testclient import TestClient
-
-from orders.main import app
-
-# ↓↓↓ Уберите эту строку на занятии 2 ↓↓↓
-pytest.skip("Реализуется на занятии 2: снимите пропуск", allow_module_level=True)
-
-client = TestClient(app)
 
 
-def test_create_order_returns_201():
-    payload = {"account_id": 1, "item": "Кофемолка", "quantity": 2}
+def test_create_order_returns_201(client):
+    payload = {"account_id": 1, "item_id": 1, "quantity": 2}
 
     response = client.post("/orders", json=payload)
 
@@ -29,3 +21,20 @@ def test_create_order_returns_201():
     assert body["account_id"] == payload["account_id"]
     assert body["item"] == payload["item"]
     assert body["quantity"] == payload["quantity"]
+
+
+@pytest.mark.parametrize(
+    "broken_field",
+    [
+        {"id": 0},
+        {"item_id": 0},
+        {"account_id": 0},
+        {"quantity": 0},
+    ],
+)
+def test_invalid_payload_returns_422(client, order_payload, broken_field):
+    payload = order_payload | broken_field
+
+    response = client.post("/orders", json=payload)
+
+    assert response.status_code == 422
