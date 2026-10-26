@@ -39,3 +39,23 @@ def test_missing_field_returns_422(client, order_payload, missing):
     response = client.post("/orders", json=payload)
 
     assert response.status_code == 422
+
+
+def test_get_orders_returns_200(client, order_payload):
+    created = client.post("/orders", json=order_payload).json()
+
+    response = client.get(f"/orders/{created['id']}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["id"] == created["id"]
+    assert body["account_id"] == order_payload["account_id"]
+    assert body["item"] == order_payload["item"]
+    assert body["quantity"] == order_payload["quantity"]
+
+
+def test_read_missing_order_returns_404(client):
+    response = client.get("/orders/99999")
+
+    assert response.status_code == 404
+    assert "99999" in response.json()["detail"]
