@@ -5,25 +5,20 @@
 """
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
+from orders.api import router
 from orders.config import settings
+from orders.schemas import HealthRead
 
 app = FastAPI(
     title="Сервис заказов",
-    description="Заготовка.",
+    description="Сервис для создания и просмотра заказов клиентов.",
     version="0.1.0",
 )
 
-
-class HealthRead(BaseModel):
-    status: str
-    service: str
+app.include_router(router)
 
 
 @app.get("/health", response_model=HealthRead, tags=["Служебное"], summary="Жив ли сервис")
 def health() -> HealthRead:
     return HealthRead(status="ok", service=settings.service_name)
-
-
-# TODO Изменить description (пример задачи)

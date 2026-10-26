@@ -1,39 +1,27 @@
-"""Описание того, что сервис принимает и что отдаёт.
-
-Эти классы — не формальность. Из них FastAPI сам собирает документацию
-по адресу /docs и сам проверяет входящие данные.
-"""
+"""Описание того, что сервис принимает и что отдаёт."""
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class AccountCreate(BaseModel):
-    """Данные для создания клиента."""
+class OrderCreate(BaseModel):
+    """Данные для создания заказа."""
 
-    name: str = Field(min_length=1, max_length=64, examples=["Иван Петров"])
-    email: EmailStr = Field(examples=["ivan@example.com"])
-    phone: str | None = Field(default=None, max_length=32, examples=["+7 900 000-00-00"])
-
-
-class AccountUpdate(BaseModel):
-    """Данные для изменения клиента. Можно прислать только часть полей."""
-
-    name: str | None = Field(default=None, min_length=1, max_length=64)
-    email: EmailStr | None = None
-    phone: str | None = Field(default=None, max_length=32)
+    account_id: int = Field(examples=[1])
+    item: str = Field(min_length=1, max_length=120, examples=["Ноутбук"])
+    quantity: int = Field(ge=1, examples=[1])
 
 
-class AccountRead(BaseModel):
-    """То, что сервис отдаёт наружу."""
+class OrderRead(BaseModel):
+    """Карточка заказа."""
 
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    name: str
-    email: EmailStr
-    phone: str | None
+    account_id: int
+    item: str
+    quantity: int
     created_at: datetime
 
 
