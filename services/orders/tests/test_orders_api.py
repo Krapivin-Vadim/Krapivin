@@ -40,7 +40,8 @@ def test_missing_field_returns_422(client, order_payload, missing):
 
     assert response.status_code == 422
 
-def test_get_orders_returns_200(client):
+
+def test_get_orders_returns_200(client, order_payload):
     created = client.post("/orders", json=order_payload).json()
 
     response = client.get(f"/orders/{created['id']}")
