@@ -1,23 +1,15 @@
-"""Общая подготовка для тестов сервиса клиентов.
-
-Каждый тест получает свою пустую базу данных в оперативной памяти.
-Так тесты не зависят друг от друга и не требуют запущенного PostgreSQL.
-"""
-
-from collections.abc import Iterator
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from orders.db import Base, get_session
 from orders.main import app
 
 
-@pytest.fixture()
-def client() -> Iterator[TestClient]:
+@pytest.fixture
+def client():
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -26,7 +18,7 @@ def client() -> Iterator[TestClient]:
     Base.metadata.create_all(engine)
     TestSession = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
-    def override_get_session() -> Iterator[Session]:
+    def override_get_session():
         with TestSession() as session:
             yield session
 
@@ -34,9 +26,9 @@ def client() -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
-    Base.metadata.drop_all(engine)
+    engine.dispose()
 
 
-@pytest.fixture()
-def order_payload() -> dict:
-    return {"id": 1, "item_id": 1, "account_id": 1, "quantity": 1}
+@pytest.fixture
+def order_payload():
+    return {"account_id": 1, "item": "Ноутбук", "quantity": 2}
